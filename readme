@@ -1,0 +1,81 @@
+io_mux4_cell io_name(
+    .testmode           (testmode             ), // <i>  2b, 
+//  .dbg_en             (dbg_en[8]            ), // <i>  1b, 
+    .dbg_en             (1'b0                 ), // <i>  1b, 
+    .fun_sel            (iomux_cfg0[5:4]      ), // <i>  2b, 
+    // function
+    .fun_a_i            (spi_miso_i           ), // <o>  1b,
+    .fun_a_ie           (spi_miso_ie          ), // <i>  1b,
+    .fun_a_o            (1'b0                 ), // <i>  1b,
+    .fun_a_oe           (1'b0                 ), // <i>  1b,
+    .default_a_i        (1'b0                 ), // <i>  1b,
+    .fun_b_i            (/*floating*/         ), // <o>  1b, 
+    .fun_b_ie           (1'b0                 ), // <i>  1b, 
+    .fun_b_o            (uart_tx_o            ), // <i>  1b, 
+    .fun_b_oe           (uart_tx_oe           ), // <i>  1b, 
+    .default_b_i        (1'b0                 ), // <i>  1b, 
+    .fun_c_i            (gpio_i[5]            ), // <o>  1b, 
+    .fun_c_ie           (gpio_ie[5]           ), // <i>  1b, 
+    .fun_c_o            (gpio_o[5]            ), // <i>  1b, 
+    .fun_c_oe           (gpio_oe[5]           ), // <i>  1b, 
+    .default_c_i        (1'b0                 ), // <i>  1b, 
+    .fun_d_i            (/*floating*/         ), // <o>  1b, 
+    .fun_d_ie           (1'b0                 ), // <i>  1b, 
+    .fun_d_o            (1'b0                 ), // <i>  1b, 
+    .fun_d_oe           (1'b0                 ), // <i>  1b, 
+    .default_d_i        (1'b0                 ), // <i>  1b, 
+    // debug
+    .dbg_i              (dbg_i[8]             ), // <o>  1b, 
+    .dbg_ie             (dbg_ie[8]            ), // <i>  1b, 
+    .dbg_o              (dbg_o[8]             ), // <i>  1b, 
+    .dbg_oe             (dbg_oe[8]            ), // <i>  1b, 
+    .default_dbg_i      (1'b1                 ), // <i>  1b, 
+    // test
+    .test_a_i           (bist_start_i         ), // <o>  1b, 
+    .test_a_ie          (1'b1                 ), // <i>  1b, 
+    .test_a_o           (1'b0                 ), // <i>  1b, 
+    .test_a_oe          (1'b0                 ), // <i>  1b, 
+    .default_test_a_i   (1'b0                 ), // <i>  1b, 
+    .test_b_i           (/*floating*/         ), // <o>  1b, 
+    .test_b_ie          (1'b0                 ), // <i>  1b, 
+    .test_b_o           (1'b0                 ), // <i>  1b, 
+    .test_b_oe          (1'b1                 ), // <i>  1b, 
+    .default_test_b_i   (1'b0                 ), // <i>  1b, 
+    // io interface
+    .cell_i             (io_name_i            ), // <i>  1b,
+    .cell_ie            (io_name_ie           ), // <o>  1b,
+    .cell_o             (io_name_o            ), // <o>  1b,
+    .cell_oe            (io_name_oe           )  // <o>  1b,
+    );
+
+name          function    
+io_name       spi_miso  uart_tx gpio
+
+
+cfg_reg         name        cfg_val   func      dir
+iomux_cfg[5:4]  io_name     00        spi_miso  C/X
+                            01        uart_tx   X/C
+                            10        gpio      C/C
+                            11        -         -
+
+input:
+    always on
+    always off
+    configurable
+output:
+    always on
+    always off
+    configurable
+
+direction:
+    I             O
+    always on     always on       O/O
+    always on     always off      O/X
+    always on     configurable    O/C
+    always off    always on       X/O
+    always off    always off      X/X
+    always off    configurable    X/C
+    configurable  always on       C/O
+    configurable  always off      C/X
+    configurable  configurable    C/C
+    
