@@ -34,10 +34,14 @@ with open('./io_matrix.csv', 'r') as f:
 
     # read lines
     lines = f.readlines()
+    io_matrix = {}
     for line in lines:
         element = attr_match(title_line, line)
         print('matrix element')
         print(element)
+        element['func_mux'] = []                        # add func_mux to element
+        io_matrix[element['name']] = element            # add element to io_matrix
+        io_matrix[element['name']].pop('name')          # remove 'name' in element since it exists in the key of io_matrix
 
 with open('./io_mux_cfg.csv', 'r') as f:
     # read lines
@@ -57,8 +61,36 @@ with open('./io_mux_cfg.csv', 'r') as f:
             continue
         elif keys[0] != '':
             element = attr_match(title_line, line)
+            element['cfg_reg'] = reg_name
             def_line = line
         else:
             element = attr_match(title_line, line, def_line)
+            element['cfg_reg'] = reg_name
         print('mux element')
         print(element)
+        io_name = element['io_name']
+        element.pop('io_name')
+        io_matrix[io_name]['func_mux'].append(element)
+
+print('\n')
+print('------------------------------')
+print('io_matrix:')
+print('------------------------------')
+for key in io_matrix:
+    print(key,':')
+    print(io_matrix[key])
+    print('\n')
+
+with open('./io_mux.v', 'w') as f:
+    f.write('module io_mux(')
+    testmode_set = set([])
+    iomux_cfg_set = set([])
+    for io_name in io_matrix:
+        for io_element in io_matrix[io_name]:
+            if io_element[0:8] == 'testmode':
+                testmode_set.add(io_element)
+            elif io_element[0:8] == 'func_mux':
+                iomux_cfg_set.add(io_matrix[io_name][io_element][0]['cfg_reg'])
+
+    print(testmode_set, '\n\n')
+    print(iomux_cfg_set)
