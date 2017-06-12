@@ -642,16 +642,13 @@ with open('./io_mux.v', 'w') as f:
     for io_name in sorted(io_matrix):
         func_mux = io_matrix[io_name]['func_mux']
         for func in func_mux:
-            print(func['func'])
             if not valid_chk(func['func']) or func['rep_order'] != 0:
                 continue
-            print(func['func'])
 
             [io_in, io_out] = func['dir'].split('/')
             bit_idx_left_bound = func['func'].find('[')
             if bit_idx_left_bound != -1:
                 continue
-            print(func['func'])
 
             func_o  = func['func'] + '_o'
             func_oe = func['func'] + '_oe'
@@ -690,7 +687,7 @@ with open('./io_mux.v', 'w') as f:
                 if io_matrix[io_name][io_element].find('_i') != -1:
                     f.write('    %-16s%-20s, // <i> %2sb,\n'%('input', io_matrix[io_name][io_element], 1))
                 elif io_matrix[io_name][io_element].find('_o') != -1:
-                    f.write('    %-16s%-20s, // <i> %2sb,\n'%('output', io_matrix[io_name][io_element], 1))
+                    f.write('    %-16s%-20s, // <o> %2sb,\n'%('output', io_matrix[io_name][io_element], 1))
                 else:
                     print('*********************************************')
                     print(io_name, ':')
