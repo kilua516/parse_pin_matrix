@@ -89,7 +89,7 @@ def gen_func_con(func_item):
             fun_ie = '1\'b0'
         if io_out == 'O':
             fun_oe = '1\'b1'
-        if io_out == 'X':
+        elif io_out == 'X':
             fun_o  = '1\'b0'
             fun_oe = '1\'b0'
 
@@ -111,7 +111,7 @@ def inst_io_mux1_cell(io_name, io_element):
     dbg_item['dir']       = 'C/C'
     dbg_item['default_i'] = '1\'b0'
     dbg_item['rep_times'] = 1
-    dbg_item['rep_order'] = 1
+    dbg_item['rep_order'] = 0
     dbg_ie, dbg_i, dbg_oe, dbg_o, default_dbg_i = gen_func_con(dbg_item)
     dbg_en = dbg_oe.replace('oe', 'en')
 
@@ -141,7 +141,7 @@ def inst_io_mux1_cell(io_name, io_element):
         test_b_oe = '1\'b0'
     default_test_b_i = '1\'b0'
 
-    str = 'io_mux2_cell io_' + io_name.lower() + '(\n'
+    str = 'io_mux1_cell io_' + io_name.lower() + '(\n'
     str = str + ('    .%-18s(%-20s),\n'%('testmode', 'testmode'))
     str = str + ('    .%-18s(%-20s),\n'%('dbg_en', dbg_en))
     str = str + ('    .%-18s(%-20s),\n'%('fun_sel', fun_sel_reg))
@@ -186,7 +186,7 @@ def inst_io_mux2_cell(io_name, io_element):
     dbg_item['dir']       = 'C/C'
     dbg_item['default_i'] = '1\'b0'
     dbg_item['rep_times'] = 1
-    dbg_item['rep_order'] = 1
+    dbg_item['rep_order'] = 0
     dbg_ie, dbg_i, dbg_oe, dbg_o, default_dbg_i = gen_func_con(dbg_item)
     dbg_en = dbg_oe.replace('oe', 'en')
 
@@ -265,7 +265,7 @@ def inst_io_mux4_cell(io_name, io_element):
     dbg_item['dir']       = 'C/C'
     dbg_item['default_i'] = '1\'b0'
     dbg_item['rep_times'] = 1
-    dbg_item['rep_order'] = 1
+    dbg_item['rep_order'] = 0
     dbg_ie, dbg_i, dbg_oe, dbg_o, default_dbg_i = gen_func_con(dbg_item)
     dbg_en = dbg_oe.replace('oe', 'en')
 
@@ -358,7 +358,7 @@ def inst_io_mux8_cell(io_name, io_element):
     dbg_item['dir']       = 'C/C'
     dbg_item['default_i'] = '1\'b0'
     dbg_item['rep_times'] = 1
-    dbg_item['rep_order'] = 1
+    dbg_item['rep_order'] = 0
     dbg_ie, dbg_i, dbg_oe, dbg_o, default_dbg_i = gen_func_con(dbg_item)
     dbg_en = dbg_oe.replace('oe', 'en')
 
@@ -579,7 +579,7 @@ with open('./io_mux.v', 'w') as f:
                 func_rep_list[func_item['func']]['rep_order'] = rep_func['rep_order'] + 1
             else:
                 func_item['rep_times'] = 1
-                func_item['rep_order'] = 1
+                func_item['rep_order'] = 0
 
     print('\n')
     print('------------------------------')
