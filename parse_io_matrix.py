@@ -86,14 +86,14 @@ def gen_func_con(func_item):
                 fun_oe = func_item['func'][0:bit_idx_left_bound] + '_oe' + func_item['func'][bit_idx_left_bound:]
                 fun_o  = func_item['func'][0:bit_idx_left_bound] + '_o'  + func_item['func'][bit_idx_left_bound:]
 
-        if io_in == 'O':
+        if io_in == 'i':
             fun_ie = '1\'b1'
-        elif io_in == 'X':
+        elif io_in == 'x':
             fun_i  = '/*floating*/'
             fun_ie = '1\'b0'
-        if io_out == 'O':
+        if io_out == 'o':
             fun_oe = '1\'b1'
-        elif io_out == 'X':
+        elif io_out == 'x':
             fun_o  = '1\'b0'
             fun_oe = '1\'b0'
 
@@ -113,7 +113,7 @@ def inst_io_mux1_cell(io_name, io_element):
     if io_element.get('debug') != None:
         dbg_item = {}
         dbg_item['func']      = io_element['debug']
-        dbg_item['dir']       = 'C/C'
+        dbg_item['dir']       = 'c/c'
         dbg_item['default_i'] = '1\'b0'
         dbg_item['rep_times'] = 1
         dbg_item['rep_order'] = 0
@@ -209,7 +209,7 @@ def inst_io_mux2_cell(io_name, io_element):
     if io_element.get('debug') != None:
         dbg_item = {}
         dbg_item['func']      = io_element['debug']
-        dbg_item['dir']       = 'C/C'
+        dbg_item['dir']       = 'c/c'
         dbg_item['default_i'] = '1\'b0'
         dbg_item['rep_times'] = 1
         dbg_item['rep_order'] = 0
@@ -310,7 +310,7 @@ def inst_io_mux4_cell(io_name, io_element):
     if io_element.get('debug') != None:
         dbg_item = {}
         dbg_item['func']      = io_element['debug']
-        dbg_item['dir']       = 'C/C'
+        dbg_item['dir']       = 'c/c'
         dbg_item['default_i'] = '1\'b0'
         dbg_item['rep_times'] = 1
         dbg_item['rep_order'] = 0
@@ -425,7 +425,7 @@ def inst_io_mux8_cell(io_name, io_element):
     if io_element.get('debug') != None:
         dbg_item = {}
         dbg_item['func']      = io_element['debug']
-        dbg_item['dir']       = 'C/C'
+        dbg_item['dir']       = 'c/c'
         dbg_item['default_i'] = '1\'b0'
         dbg_item['rep_times'] = 1
         dbg_item['rep_order'] = 0
@@ -732,13 +732,13 @@ with open('./io_mux.v', 'w') as f:
         max_bit = multi_bit_sig_list[multi_bit_sig]['max_bit']
         in_declare  = 'input   [' + str(max_bit) + ':0]'
         out_declare = 'output  [' + str(max_bit) + ':0]'
-        if io_in == 'C':
+        if io_in == 'c':
             f.write('    %-16s%-20s, // <i> %2sb,\n'%(in_declare, func_ie, max_bit + 1))
-        if io_in != 'X':
+        if io_in != 'x':
             f.write('    %-16s%-20s, // <o> %2sb,\n'%(out_declare, func_i, max_bit + 1))
-        if io_out == 'C':
+        if io_out == 'c':
             f.write('    %-16s%-20s, // <i> %2sb,\n'%(in_declare, func_oe, max_bit + 1))
-        if io_out != 'X':
+        if io_out != 'x':
             f.write('    %-16s%-20s, // <i> %2sb,\n'%(in_declare, func_o, max_bit + 1))
 
     for io_name in sorted(io_matrix):
@@ -759,13 +759,13 @@ with open('./io_mux.v', 'w') as f:
 
             in_declare  = 'input'
             out_declare = 'output'
-            if io_in == 'C':
+            if io_in == 'c':
                 f.write('    %-16s%-20s, // <i> %2sb,\n'%(in_declare, func_ie, 1))
-            if io_in != 'X':
+            if io_in != 'x':
                 f.write('    %-16s%-20s, // <o> %2sb,\n'%(out_declare, func_i, 1))
-            if io_out == 'C':
+            if io_out == 'c':
                 f.write('    %-16s%-20s, // <i> %2sb,\n'%(in_declare, func_oe, 1))
-            if io_out != 'X':
+            if io_out != 'x':
                 f.write('    %-16s%-20s, // <i> %2sb,\n'%(in_declare, func_o, 1))
     f.write('\n')
 
