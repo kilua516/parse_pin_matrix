@@ -1,3 +1,7 @@
+import datetime
+
+FUNCTION = 'function'
+
 def valid_chk(value):
     if value == '':
         return False
@@ -37,12 +41,12 @@ def attr_match(title_line, attr_line, def_attr_line = ''):
 
 def func_chk(io_name, io_item):
     for func_item in io_item['func_mux']:
-        if valid_chk(func_item['func']) and func_item['func'] not in io_item['function']:
+        if valid_chk(func_item['func']) and func_item['func'] not in io_item[FUNCTION]:
             print('*********************************************')
             print('function list not match')
             print(io_name)
             print('function: ', func_item['func'])
-            print('function list: ', io_item['function'])
+            print('function list: ', io_item[FUNCTION])
             print('*********************************************')
             return 0
     return 1
@@ -106,45 +110,66 @@ def inst_io_mux1_cell(io_name, io_element):
     func_item = io_element['func_mux'][0]
     fun_a_ie, fun_a_i, fun_a_oe, fun_a_o, default_a_i = gen_func_con(func_item)
 
-    dbg_item = {}
-    dbg_item['func']      = io_element['debug']
-    dbg_item['dir']       = 'C/C'
-    dbg_item['default_i'] = '1\'b0'
-    dbg_item['rep_times'] = 1
-    dbg_item['rep_order'] = 0
-    dbg_ie, dbg_i, dbg_oe, dbg_o, default_dbg_i = gen_func_con(dbg_item)
-    dbg_en = dbg_oe.replace('oe', 'en')
+    if io_element.get('debug') != None:
+        dbg_item = {}
+        dbg_item['func']      = io_element['debug']
+        dbg_item['dir']       = 'C/C'
+        dbg_item['default_i'] = '1\'b0'
+        dbg_item['rep_times'] = 1
+        dbg_item['rep_order'] = 0
+        dbg_ie, dbg_i, dbg_oe, dbg_o, default_dbg_i = gen_func_con(dbg_item)
+        dbg_en = dbg_oe.replace('oe', 'en')
+    else:
+        dbg_ie        = '1\'b0'
+        dbg_i         = '/*floating*/'
+        dbg_oe        = '1\'b0'
+        dbg_o         = '1\'b0'
+        dbg_en        = '1\'b0'
+        default_dbg_i = '1\'b0'
 
-    if io_element['testmode1'].find('_i') != -1:
-        test_a_i  = io_element['testmode1']
-        test_a_ie = '1\'b1'
+    if io_element.get('testmode1') != None:
+        if io_element['testmode1'].find('_i') != -1:
+            test_a_i  = io_element['testmode1']
+            test_a_ie = '1\'b1'
+        else:
+            test_a_i  = '/*floating*/'
+            test_a_ie = '1\'b0'
+        if io_element['testmode1'].find('_o') != -1:
+            test_a_o  = io_element['testmode1']
+            test_a_oe = '1\'b1'
+        else:
+            test_a_o  = '1\'b0'
+            test_a_oe = '1\'b0'
+        default_test_a_i = '1\'b0'
     else:
-        test_a_i  = '/*floating*/'
-        test_a_ie = '1\'b0'
-    if io_element['testmode1'].find('_o') != -1:
-        test_a_o  = io_element['testmode1']
-        test_a_oe = '1\'b1'
-    else:
-        test_a_o  = '1\'b0'
-        test_a_oe = '1\'b0'
-    default_test_a_i = '1\'b0'
+        test_a_ie        = '1\'b0'
+        test_a_i         = '/*floating*/'
+        test_a_oe        = '1\'b0'
+        test_a_o         = '1\'b0'
+        default_test_a_i = '1\'b0'
 
-    test_b_i = '/*floating*/'
-    test_b_o = '1\'b0'
-    if io_element['testmode2'].find('_i') != -1:
-        test_b_ie = '1\'b1'
+    if io_element.get('testmode2') != None:
+        test_b_i = '/*floating*/'
+        test_b_o = '1\'b0'
+        if io_element['testmode2'].find('_i') != -1:
+            test_b_ie = '1\'b1'
+        else:
+            test_b_ie = '1\'b0'
+        if io_element['testmode2'].find('_o') != -1:
+            test_b_oe = '1\'b1'
+        else:
+            test_b_oe = '1\'b0'
+        default_test_b_i = '1\'b0'
     else:
-        test_b_ie = '1\'b0'
-    if io_element['testmode2'].find('_o') != -1:
-        test_b_oe = '1\'b1'
-    else:
-        test_b_oe = '1\'b0'
-    default_test_b_i = '1\'b0'
+        test_b_ie        = '1\'b0'
+        test_b_i         = '/*floating*/'
+        test_b_oe        = '1\'b0'
+        test_b_o         = '1\'b0'
+        default_test_b_i = '1\'b0'
 
     str = 'io_mux1_cell io_' + io_name.lower() + '(\n'
     str = str + ('    .%-18s(%-20s),\n'%('testmode', 'testmode'))
     str = str + ('    .%-18s(%-20s),\n'%('dbg_en', dbg_en))
-    str = str + ('    .%-18s(%-20s),\n'%('fun_sel', fun_sel_reg))
     str = str + ('    // function matrix\n')
     str = str + ('    .%-18s(%-20s),\n'%('fun_a_i'    , fun_a_i    ))
     str = str + ('    .%-18s(%-20s),\n'%('fun_a_ie'   , fun_a_ie   ))
@@ -181,40 +206,62 @@ def inst_io_mux2_cell(io_name, io_element):
         elif int(func_item['iomux_cfg'], 2) == 1:
             fun_b_ie, fun_b_i, fun_b_oe, fun_b_o, default_b_i = gen_func_con(func_item)
 
-    dbg_item = {}
-    dbg_item['func']      = io_element['debug']
-    dbg_item['dir']       = 'C/C'
-    dbg_item['default_i'] = '1\'b0'
-    dbg_item['rep_times'] = 1
-    dbg_item['rep_order'] = 0
-    dbg_ie, dbg_i, dbg_oe, dbg_o, default_dbg_i = gen_func_con(dbg_item)
-    dbg_en = dbg_oe.replace('oe', 'en')
+    if io_element.get('debug') != None:
+        dbg_item = {}
+        dbg_item['func']      = io_element['debug']
+        dbg_item['dir']       = 'C/C'
+        dbg_item['default_i'] = '1\'b0'
+        dbg_item['rep_times'] = 1
+        dbg_item['rep_order'] = 0
+        dbg_ie, dbg_i, dbg_oe, dbg_o, default_dbg_i = gen_func_con(dbg_item)
+        dbg_en = dbg_oe.replace('oe', 'en')
+    else:
+        dbg_ie        = '1\'b0'
+        dbg_i         = '/*floating*/'
+        dbg_oe        = '1\'b0'
+        dbg_o         = '1\'b0'
+        dbg_en        = '1\'b0'
+        default_dbg_i = '1\'b0'
 
-    if io_element['testmode1'].find('_i') != -1:
-        test_a_i  = io_element['testmode1']
-        test_a_ie = '1\'b1'
+    if io_element.get('testmode1') != None:
+        if io_element['testmode1'].find('_i') != -1:
+            test_a_i  = io_element['testmode1']
+            test_a_ie = '1\'b1'
+        else:
+            test_a_i  = '/*floating*/'
+            test_a_ie = '1\'b0'
+        if io_element['testmode1'].find('_o') != -1:
+            test_a_o  = io_element['testmode1']
+            test_a_oe = '1\'b1'
+        else:
+            test_a_o  = '1\'b0'
+            test_a_oe = '1\'b0'
+        default_test_a_i = '1\'b0'
     else:
-        test_a_i  = '/*floating*/'
-        test_a_ie = '1\'b0'
-    if io_element['testmode1'].find('_o') != -1:
-        test_a_o  = io_element['testmode1']
-        test_a_oe = '1\'b1'
-    else:
-        test_a_o  = '1\'b0'
-        test_a_oe = '1\'b0'
-    default_test_a_i = '1\'b0'
+        test_a_ie        = '1\'b0'
+        test_a_i         = '/*floating*/'
+        test_a_oe        = '1\'b0'
+        test_a_o         = '1\'b0'
+        default_test_a_i = '1\'b0'
 
-    test_b_i = '/*floating*/'
-    test_b_o = '1\'b0'
-    if io_element['testmode2'].find('_i') != -1:
-        test_b_ie = '1\'b1'
+    if io_element.get('testmode2') != None:
+        test_b_i = '/*floating*/'
+        test_b_o = '1\'b0'
+        if io_element['testmode2'].find('_i') != -1:
+            test_b_ie = '1\'b1'
+        else:
+            test_b_ie = '1\'b0'
+        if io_element['testmode2'].find('_o') != -1:
+            test_b_oe = '1\'b1'
+        else:
+            test_b_oe = '1\'b0'
+        default_test_b_i = '1\'b0'
     else:
-        test_b_ie = '1\'b0'
-    if io_element['testmode2'].find('_o') != -1:
-        test_b_oe = '1\'b1'
-    else:
-        test_b_oe = '1\'b0'
-    default_test_b_i = '1\'b0'
+        test_b_ie        = '1\'b0'
+        test_b_i         = '/*floating*/'
+        test_b_oe        = '1\'b0'
+        test_b_o         = '1\'b0'
+        default_test_b_i = '1\'b0'
 
     str = 'io_mux2_cell io_' + io_name.lower() + '(\n'
     str = str + ('    .%-18s(%-20s),\n'%('testmode', 'testmode'))
@@ -260,40 +307,62 @@ def inst_io_mux4_cell(io_name, io_element):
         elif int(func_item['iomux_cfg'], 2) == 3:
             fun_d_ie, fun_d_i, fun_d_oe, fun_d_o, default_d_i = gen_func_con(func_item)
 
-    dbg_item = {}
-    dbg_item['func']      = io_element['debug']
-    dbg_item['dir']       = 'C/C'
-    dbg_item['default_i'] = '1\'b0'
-    dbg_item['rep_times'] = 1
-    dbg_item['rep_order'] = 0
-    dbg_ie, dbg_i, dbg_oe, dbg_o, default_dbg_i = gen_func_con(dbg_item)
-    dbg_en = dbg_oe.replace('oe', 'en')
+    if io_element.get('debug') != None:
+        dbg_item = {}
+        dbg_item['func']      = io_element['debug']
+        dbg_item['dir']       = 'C/C'
+        dbg_item['default_i'] = '1\'b0'
+        dbg_item['rep_times'] = 1
+        dbg_item['rep_order'] = 0
+        dbg_ie, dbg_i, dbg_oe, dbg_o, default_dbg_i = gen_func_con(dbg_item)
+        dbg_en = dbg_oe.replace('oe', 'en')
+    else:
+        dbg_ie        = '1\'b0'
+        dbg_i         = '/*floating*/'
+        dbg_oe        = '1\'b0'
+        dbg_o         = '1\'b0'
+        dbg_en        = '1\'b0'
+        default_dbg_i = '1\'b0'
 
-    if io_element['testmode1'].find('_i') != -1:
-        test_a_i  = io_element['testmode1']
-        test_a_ie = '1\'b1'
+    if io_element.get('testmode1') != None:
+        if io_element['testmode1'].find('_i') != -1:
+            test_a_i  = io_element['testmode1']
+            test_a_ie = '1\'b1'
+        else:
+            test_a_i  = '/*floating*/'
+            test_a_ie = '1\'b0'
+        if io_element['testmode1'].find('_o') != -1:
+            test_a_o  = io_element['testmode1']
+            test_a_oe = '1\'b1'
+        else:
+            test_a_o  = '1\'b0'
+            test_a_oe = '1\'b0'
+        default_test_a_i = '1\'b0'
     else:
-        test_a_i  = '/*floating*/'
-        test_a_ie = '1\'b0'
-    if io_element['testmode1'].find('_o') != -1:
-        test_a_o  = io_element['testmode1']
-        test_a_oe = '1\'b1'
-    else:
-        test_a_o  = '1\'b0'
-        test_a_oe = '1\'b0'
-    default_test_a_i = '1\'b0'
+        test_a_ie        = '1\'b0'
+        test_a_i         = '/*floating*/'
+        test_a_oe        = '1\'b0'
+        test_a_o         = '1\'b0'
+        default_test_a_i = '1\'b0'
 
-    test_b_i = '/*floating*/'
-    test_b_o = '1\'b0'
-    if io_element['testmode2'].find('_i') != -1:
-        test_b_ie = '1\'b1'
+    if io_element.get('testmode2') != None:
+        test_b_i = '/*floating*/'
+        test_b_o = '1\'b0'
+        if io_element['testmode2'].find('_i') != -1:
+            test_b_ie = '1\'b1'
+        else:
+            test_b_ie = '1\'b0'
+        if io_element['testmode2'].find('_o') != -1:
+            test_b_oe = '1\'b1'
+        else:
+            test_b_oe = '1\'b0'
+        default_test_b_i = '1\'b0'
     else:
-        test_b_ie = '1\'b0'
-    if io_element['testmode2'].find('_o') != -1:
-        test_b_oe = '1\'b1'
-    else:
-        test_b_oe = '1\'b0'
-    default_test_b_i = '1\'b0'
+        test_b_ie        = '1\'b0'
+        test_b_i         = '/*floating*/'
+        test_b_oe        = '1\'b0'
+        test_b_o         = '1\'b0'
+        default_test_b_i = '1\'b0'
 
     str = 'io_mux4_cell io_' + io_name.lower() + '(\n'
     str = str + ('    .%-18s(%-20s),\n'%('testmode', 'testmode'))
@@ -353,40 +422,62 @@ def inst_io_mux8_cell(io_name, io_element):
         elif int(func_item['iomux_cfg'], 2) == 7:
             fun_h_ie, fun_h_i, fun_h_oe, fun_h_o, default_h_i = gen_func_con(func_item)
 
-    dbg_item = {}
-    dbg_item['func']      = io_element['debug']
-    dbg_item['dir']       = 'C/C'
-    dbg_item['default_i'] = '1\'b0'
-    dbg_item['rep_times'] = 1
-    dbg_item['rep_order'] = 0
-    dbg_ie, dbg_i, dbg_oe, dbg_o, default_dbg_i = gen_func_con(dbg_item)
-    dbg_en = dbg_oe.replace('oe', 'en')
+    if io_element.get('debug') != None:
+        dbg_item = {}
+        dbg_item['func']      = io_element['debug']
+        dbg_item['dir']       = 'C/C'
+        dbg_item['default_i'] = '1\'b0'
+        dbg_item['rep_times'] = 1
+        dbg_item['rep_order'] = 0
+        dbg_ie, dbg_i, dbg_oe, dbg_o, default_dbg_i = gen_func_con(dbg_item)
+        dbg_en = dbg_oe.replace('oe', 'en')
+    else:
+        dbg_ie        = '1\'b0'
+        dbg_i         = '/*floating*/'
+        dbg_oe        = '1\'b0'
+        dbg_o         = '1\'b0'
+        dbg_en        = '1\'b0'
+        default_dbg_i = '1\'b0'
 
-    if io_element['testmode1'].find('_i') != -1:
-        test_a_i  = io_element['testmode1']
-        test_a_ie = '1\'b1'
+    if io_element.get('testmode1') != None:
+        if io_element['testmode1'].find('_i') != -1:
+            test_a_i  = io_element['testmode1']
+            test_a_ie = '1\'b1'
+        else:
+            test_a_i  = '/*floating*/'
+            test_a_ie = '1\'b0'
+        if io_element['testmode1'].find('_o') != -1:
+            test_a_o  = io_element['testmode1']
+            test_a_oe = '1\'b1'
+        else:
+            test_a_o  = '1\'b0'
+            test_a_oe = '1\'b0'
+        default_test_a_i = '1\'b0'
     else:
-        test_a_i  = '/*floating*/'
-        test_a_ie = '1\'b0'
-    if io_element['testmode1'].find('_o') != -1:
-        test_a_o  = io_element['testmode1']
-        test_a_oe = '1\'b1'
-    else:
-        test_a_o  = '1\'b0'
-        test_a_oe = '1\'b0'
-    default_test_a_i = '1\'b0'
+        test_a_ie        = '1\'b0'
+        test_a_i         = '/*floating*/'
+        test_a_oe        = '1\'b0'
+        test_a_o         = '1\'b0'
+        default_test_a_i = '1\'b0'
 
-    test_b_i = '/*floating*/'
-    test_b_o = '1\'b0'
-    if io_element['testmode2'].find('_i') != -1:
-        test_b_ie = '1\'b1'
+    if io_element.get('testmode2') != None:
+        test_b_i = '/*floating*/'
+        test_b_o = '1\'b0'
+        if io_element['testmode2'].find('_i') != -1:
+            test_b_ie = '1\'b1'
+        else:
+            test_b_ie = '1\'b0'
+        if io_element['testmode2'].find('_o') != -1:
+            test_b_oe = '1\'b1'
+        else:
+            test_b_oe = '1\'b0'
+        default_test_b_i = '1\'b0'
     else:
-        test_b_ie = '1\'b0'
-    if io_element['testmode2'].find('_o') != -1:
-        test_b_oe = '1\'b1'
-    else:
-        test_b_oe = '1\'b0'
-    default_test_b_i = '1\'b0'
+        test_b_ie        = '1\'b0'
+        test_b_i         = '/*floating*/'
+        test_b_oe        = '1\'b0'
+        test_b_o         = '1\'b0'
+        default_test_b_i = '1\'b0'
 
     str = 'io_mux8_cell io_' + io_name.lower() + '(\n'
     str = str + ('    .%-18s(%-20s),\n'%('testmode', 'testmode'))
@@ -440,13 +531,15 @@ def inst_io_mux8_cell(io_name, io_element):
 with open('./io_matrix.csv', 'r') as f:
     # read title_line
     title_line = f.readline()
-    keys = title_line.strip().split(',')
+    keys = title_line.strip().lower().split(',')
+    print('title line')
+    print(title_line)
 
     # read lines
     lines = f.readlines()
     io_matrix = {}
     for line in lines:
-        element = attr_match(title_line, line)
+        element = attr_match(title_line.lower(), line.lower())
         print('matrix element')
         print(element)
         element['func_mux'] = []                        # add func_mux to element
@@ -458,7 +551,7 @@ with open('./io_mux_cfg.csv', 'r') as f:
     lines = f.readlines()
     def_line = ''
     for line in lines:
-        keys = line.strip().split(',')
+        keys = line.strip().lower().split(',')
         if keys[0][0:9] == 'iomux_cfg':
             reg_name = keys[0]
             print('reg_name:', reg_name)
@@ -470,17 +563,26 @@ with open('./io_mux_cfg.csv', 'r') as f:
             title_line = line
             continue
         elif keys[0] != '':
-            element = attr_match(title_line, line)
+            element = attr_match(title_line.lower(), line.lower())
             element['cfg_reg'] = reg_name
+            prev_element = element
+            def_line = line
+        elif keys[0] == '' and keys[1] != '':
+            line = prev_element['bits'] + line
+            element = attr_match(title_line.lower(), line.lower())
+            element['cfg_reg'] = reg_name
+            prev_element = element
             def_line = line
         else:
-            element = attr_match(title_line, line, def_line)
+            element = attr_match(title_line.lower(), line.lower(), def_line.lower())
             element['cfg_reg'] = reg_name
+            prev_element = element
         print('mux element')
         print(element)
-        io_name = element['io_name']
-        element.pop('io_name')
-        io_matrix[io_name]['func_mux'].append(element)
+        if valid_chk(element['io_name']):
+            io_name = element['io_name']
+            element.pop('io_name')
+            io_matrix[io_name]['func_mux'].append(element)
 
 print('\n')
 print('------------------------------')
@@ -545,7 +647,7 @@ with open('./io_mux.v', 'w') as f:
                     print('default_i: ', rep_func['default_i'])
                     print('default_i: ', func_item['default_i'])
                     print('*********************************************')
-                if rep_func['dir'].find('X/') == -1:    # means input is enable
+                if rep_func['dir'].find('x/') == -1:    # means input is enable
                     func_rep_list[func_item['func']]['rep_times'] = rep_func['rep_times'] + 1
             elif valid_chk(func_item['func']):
                 func_rep_list[func_item['func']] = {}
@@ -599,7 +701,7 @@ with open('./io_mux.v', 'w') as f:
     print(dbg_bit_width)
     print('------------------------------')
     print('------------------------------')
-    print('debug function replicate list:')
+    print('function replicate list:')
     print(func_rep_list)
     print('------------------------------')
 
@@ -712,6 +814,16 @@ with open('./io_mux.v', 'w') as f:
     f.write('    );\n')
     f.write('\n')
 
+    # wire definition
+    f.write('    // wire definition\n')
+    for rep_func in sorted(func_rep_list):
+        rep_times = func_rep_list[rep_func]['rep_times']
+        if rep_times > 1:
+            for rep_order in range(rep_times):
+                wire_name = ('%s_f%s_i'%(rep_func, rep_order))
+                f.write('%-8s%-20s;\n'%('wire', wire_name))
+    f.write('\n')
+
     # io_mux_cell instances
     for io_name in sorted(io_matrix):
         func_total_num = len(io_matrix[io_name]['func_mux'])
@@ -730,7 +842,7 @@ with open('./io_mux.v', 'w') as f:
     for rep_func in sorted(func_rep_list):
         rep_times = func_rep_list[rep_func]['rep_times']
         if rep_times > 1:
-            str = ('assign %s_i ='%(rep_func))
+            str = str + ('assign %s_i ='%(rep_func))
             if func_rep_list[rep_func]['default_i'][-1] == '0':
                 operator = '|'
             elif func_rep_list[rep_func]['default_i'][-1] == '1':
