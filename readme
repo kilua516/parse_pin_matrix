@@ -69,9 +69,9 @@ output:
 
 direction:
     I             O
-    always on     always on       O/O
-    always on     always off      O/X
-    always on     configurable    O/C
+    always on     always on       I/O
+    always on     always off      I/X
+    always on     configurable    I/C
     always off    always on       X/O
     always off    always off      X/X
     always off    configurable    X/C
